@@ -1,0 +1,30 @@
+{
+  "name": "request-queue",
+  "version": "0.0.0",
+  "description": "A simple request or action queue.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/scull7/request-queue.git"
+  },
+  "keywords": [
+    "queue"
+  ],
+  "author": "Nathan Sculli",
+  "license": "GPLv2",
+  "bugs": {
+    "url": "https://github.com/scull7/request-queue/issues"
+  },
+  "devDependencies": {
+    "sinon-chai": "~2.5.0",
+    "chai": "~1.9.1",
+    "sinon": "~1.9.1",
+    "mocha": "~1.18.2"
+  }
+}
