@@ -1,3 +1,5 @@
+[![Code Climate](https://codeclimate.com/github/scull7/request-queue.png)](https://codeclimate.com/github/scull7/request-queue)
+
 request-queue
 =============
 
