@@ -6,3 +6,4 @@ node_js:
   - "0.6"
 after_install:
   - "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"
+  - "CODECLIMATE_REPO_TOKEN=e411d8c7652cd4d4796d0d80b1957a7683045ad71fdfafc5b2238122386183a9 codeclimate < ./coverage/lcov.info"
