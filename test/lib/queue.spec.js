@@ -3,9 +3,44 @@ var Queue = require(__dirname + '/../../lib/queue.js');
 describe ('Queue', function () {
   var queue;
   beforeEach(function () {
-    var cache = {},
     entry_factory = {}; 
-    queue = new Queue(cache, entry_factory); 
+    queue = new Queue(entry_factory); 
+  });
+
+  it('should initialize with a sudo cache object', function () {
+    expect(queue).to.have.property('cache').that.is.an('object');
+  });
+
+  describe('Queue#cache', function () {
+    it('should have a set function', function () {
+      expect(queue.cache).to.have.property('set').that.is.a('function');
+    });
+
+    describe('Queue#cache#set()', function () {
+      it('should return undefined', function () {
+        expect(queue.cache.set()).to.be.undefined;
+      });
+    });
+
+    it('should have a key function', function () {
+      expect(queue.cache).to.have.property('key').that.is.a('function');
+    });
+
+    describe('Queue#cache#key()', function () {
+      it('should return undefined', function () {
+        expect(queue.cache.key()).to.be.false;
+      });
+    });
+
+    it('should have a get function', function () {
+      expect(queue.cache).to.have.property('get').that.is.a('function');
+    });
+
+    describe('Queue#cache#get()', function () {
+      it('should return undefined', function () {
+        expect(queue.cache.get()).to.be.null;
+      });
+    });
   });
 
   it('should have a run function', function () {
@@ -74,8 +109,8 @@ describe ('Queue', function () {
   describe('#getEntry', function () {
     beforeEach(function () {
       queue.cache = {
-        'hasKey': sinon.spy(),
-        'add': sinon.spy(),
+        'key': sinon.spy(),
+        'set': sinon.spy(),
         'get': sinon.spy()
       };
       queue.entry_factory = {
@@ -83,21 +118,21 @@ describe ('Queue', function () {
       };
     });
     it('should return an entry from the factory getNew() function when the cache key does not exist.', function () {
-      queue.cache.hasKey = sinon.stub().returns(false);
+      queue.cache.key = sinon.stub().returns(false);
       var test_entry = {};
       queue.entry_factory.getNew = sinon.stub().returns(test_entry);
       expect(queue.getEntry('dne')).to.eql(test_entry);
-      queue.cache.hasKey.should.have.been.calledWith('dne');
-      queue.cache.add.should.have.been.calledWith('dne',test_entry);
+      queue.cache.key.should.have.been.calledWith('dne');
+      queue.cache.set.should.have.been.calledWith('dne',test_entry);
       queue.entry_factory.getNew.should.have.been.calledOnce;
     }); 
     it('should return an entry from the cache when the key exists.', function () {
-      queue.cache.hasKey = sinon.stub().returns(true);
+      queue.cache.key = sinon.stub().returns(true);
       var test_entry = {};
       queue.cache.get = sinon.stub().returns(test_entry);
       expect(queue.getEntry('exists')).to.be.eql(test_entry);
-      queue.cache.hasKey.should.have.been.calledWith('exists');
-      queue.cache.add.should.not.have.been.called;
+      queue.cache.key.should.have.been.calledWith('exists');
+      queue.cache.set.should.not.have.been.called;
       queue.entry_factory.getNew.should.not.have.been.called;
       queue.cache.get.should.have.been.calledWith('exists');
     });
@@ -123,56 +158,5 @@ describe ('Queue', function () {
       done('test1', 'test2','test3');
       entry.run.should.have.been.calledWith('test1','test2','test3');
     });
-  });
-  
-  it('should have a flush function', function () {
-    expect(queue).to.have.property('flush').that.is.a('function');
-  });
-
-  describe('#flush()', function () {
-    it('should call the cache cache.clear() function when no key is given', function () {
-      var spy = sinon.spy();
-      queue.cache.clear = spy;
-      expect(queue.flush()).to.be.eql(queue);
-      spy.should.have.been.calledOnce;
-    });
-    it('should call the cache.remove() function when a key is given.', function () {
-      var spy = sinon.spy();
-      queue.cache.remove = spy;
-      expect(queue.flush(42)).to.be.eql(queue);
-      spy.should.have.been.calledWith(42);
-    });
-  });
-
-  it('should have a prune function', function () {
-    expect(queue).to.have.property('prune').that.is.a('function');
-  });
-
-  describe('#prune()', function () {
-    it('should call the cache.prune() function', function () {
-      var spy = sinon.spy();
-      queue.cache.prune = spy;
-      expect(queue.prune()).to.be.eql(queue);
-      spy.should.have.been.calledOnce; 
-    });
-    it('should pass the given time to live to the cache.prune() function', function () {
-      var spy = sinon.spy();
-      queue.cache.prune = spy;
-      queue.prune(42);
-      spy.should.have.been.calledWith(42);
-    });
-  });
-
-  it('should have a size function', function () {
-    expect(queue).to.have.property('size').that.is.a('function');
-  });
-
-  describe('#size()', function () {
-    it('should call the cache.size() function', function () {
-      var spy = sinon.stub().returns(42);
-      queue.cache.size = spy;
-      expect(queue.size()).to.be.eql(42);
-      spy.should.have.been.calledOnce;
-    }); 
   });
 });
