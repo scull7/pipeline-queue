@@ -47,8 +47,21 @@ describe('Entry', function () {
   });
 
   describe('isValid', function () {
+    var clock;
+
+    beforeEach(function () {
+      clock = sinon.useFakeTimers();
+    });
+    afterEach(function () {
+      clock.restore();
+    });
     it('should return false on a newly initialized object.', function () {
       expect(entry.isValid()).to.be.false;
+    });
+    it('should return false when the time to live has expired.', function () {
+      entry.time = ((new Date()).getTime() - 501);
+      entry.last = 'something';
+      expect(entry.isValid(500)).to.be.false;
     });
   });
 
