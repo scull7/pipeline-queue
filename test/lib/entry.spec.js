@@ -63,6 +63,10 @@ describe('Entry', function () {
       entry.last = 'something';
       expect(entry.isValid(500)).to.be.false;
     });
+    it('should return true when we have a response and the time to live has not expired.', function () {
+      entry.last = 'something';
+      expect(entry.isValid(500)).to.be.true;
+    });
   });
 
   it('should have an isActive function', function () {
