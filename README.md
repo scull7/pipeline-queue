@@ -10,14 +10,14 @@ Installation
 ------------
 Just use npm to install.
 
-````
+```javascript
 npm install pipeline-queue
-````
+```
 
 Usage
 -----
 
-````
+```javascript
 var PipelineQueue = require('pipeline-queue'),
 queue = PipelineQueue();
 
@@ -33,4 +33,4 @@ callback2 = function (results) { // handle the response. };
 queue.run(key, task, callback2); //if the task has not completed yet,
                                 //then our callback will be queued and the task will not be run.
                                 //Our callback will receive the results of the initial task run.
-                                
+```
