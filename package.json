@@ -15,6 +15,7 @@
     "url": "git://github.com/scull7/request-queue.git"
   },
   "keywords": [
+    "cache",
     "queue"
   ],
   "author": "Nathan Sculli",
