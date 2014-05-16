@@ -17,18 +17,9 @@ describe ('Queue', function () {
     });
 
     describe('Queue#cache#set()', function () {
-      it('should return undefined', function () {
-        expect(queue.cache.set()).to.be.undefined;
-      });
-    });
-
-    it('should have a key function', function () {
-      expect(queue.cache).to.have.property('key').that.is.a('function');
-    });
-
-    describe('Queue#cache#key()', function () {
-      it('should return undefined', function () {
-        expect(queue.cache.key()).to.be.false;
+      it('should return the value returned by the given done function.', function () {
+        var test = function () { return null; };
+        expect(queue.cache.set('test', 'value', test)).to.be.null;
       });
     });
 
@@ -37,8 +28,9 @@ describe ('Queue', function () {
     });
 
     describe('Queue#cache#get()', function () {
-      it('should return undefined', function () {
-        expect(queue.cache.get()).to.be.null;
+      it('should return the value returned by the given done function. ', function () {
+        var test = function () { return null; };
+        expect(queue.cache.get('test', test)).to.be.null;
       });
     });
   });
@@ -51,7 +43,6 @@ describe ('Queue', function () {
     var entry, callback, task;
 
     beforeEach(function () {
-      queue.entry_factory.getNew = sinon.stub().returns(entry);
       callback = sinon.spy();
       task = sinon.spy();
       entry = {
@@ -61,10 +52,10 @@ describe ('Queue', function () {
         'getLast': sinon.spy()
       };
       entry.getLast = sinon.stub().returns(['test']);
-      queue.getEntry = sinon.stub().returns(entry);
+      queue.entry_factory.getNew = sinon.stub().returns(entry);
     });
 
-    it('should call the callback with the value of the last response when a valid entry is given', function () {
+    it('should return the queue object.', function () {
       var response = queue.run('test', task, callback, 42);
       expect(response).to.be.eql(queue);
     });
@@ -108,33 +99,52 @@ describe ('Queue', function () {
 
   describe('#getEntry', function () {
     beforeEach(function () {
-      queue.cache = {
-        'key': sinon.spy(),
-        'set': sinon.spy(),
-        'get': sinon.spy()
-      };
+      sinon.spy(queue.cache,'set');
+      sinon.spy(queue.cache,'get');
+      
       queue.entry_factory = {
         'getNew': sinon.spy()
       };
     });
-    it('should return an entry from the factory getNew() function when the cache key does not exist.', function () {
-      queue.cache.key = sinon.stub().returns(false);
+    afterEach(function () {
+      queue.cache.set.restore();
+      queue.cache.get.restore();
+    });
+
+    it('should return an entry from the factory getNew() function when the cache key does not exist.', function (done) {
       var test_entry = {};
       queue.entry_factory.getNew = sinon.stub().returns(test_entry);
-      expect(queue.getEntry('dne')).to.eql(test_entry);
-      queue.cache.key.should.have.been.calledWith('dne');
-      queue.cache.set.should.have.been.calledWith('dne',test_entry);
-      queue.entry_factory.getNew.should.have.been.calledOnce;
+      var response = queue.getEntry('dne', function (err, entry) {
+        queue.cache.set.should.have.been.calledWith('dne',test_entry);
+        queue.entry_factory.getNew.should.have.been.calledOnce;
+        done();
+      });
+      expect(response).to.eql(queue);
     }); 
     it('should return an entry from the cache when the key exists.', function () {
-      queue.cache.key = sinon.stub().returns(true);
       var test_entry = {};
-      queue.cache.get = sinon.stub().returns(test_entry);
-      expect(queue.getEntry('exists')).to.be.eql(test_entry);
-      queue.cache.key.should.have.been.calledWith('exists');
-      queue.cache.set.should.not.have.been.called;
-      queue.entry_factory.getNew.should.not.have.been.called;
-      queue.cache.get.should.have.been.calledWith('exists');
+      queue.cache.get = function (key, done) {
+        return done(null, test_entry);
+      };
+      sinon.spy(queue.cache, 'get');
+
+      var response = queue.getEntry('exists', function (err, entry) {
+        queue.cache.set.should.not.have.been.called;
+        queue.entry_factory.getNew.should.not.have.been.called;
+        queue.cache.get.should.have.been.calledWith('exists');
+        expect(entry).to.be.eql(test_entry);
+      });
+      expect(response).to.be.eql(queue);
+    });
+    it('should not call the cache#set() function if an error is returned from the cache.', function (done) {
+      queue.cache.get = function (key, done) {
+        return done('error');
+      };
+      sinon.spy(queue.cache, 'get');
+      queue.getEntry('has_error', function (err, entry) {
+        queue.cache.set.should.not.have.been.called;
+        done();
+      });
     });
   }); 
   it('should have a getHandler function', function () {
