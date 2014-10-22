@@ -24,4 +24,45 @@ describe('QueueFactory', function () {
     expect(queue).to.be.an.instanceOf(Queue);
     expect(queue.entry_factory).to.be.eql(factory);
   });
+
+  it.only('should not call a given handler more than once', function (done) {
+    var queue     = QueueFactory(),
+        workCall  = 0,
+        count     = 0,
+        finished  = function () {
+                    count++
+
+                    if (count > 2) {
+                      process.nextTick(function () {
+                        expect(workCall).to.eql(2);
+                        expect(count).to.eql(3)
+                        done();
+                      });
+                    }
+                  },
+        work      = function (cb) {
+                    workCall++;
+                    process.nextTick(cb.bind(cb, null, 'hello', 'world'));
+                  },
+        handler1  = function (err, first, second) {
+                    expect(err).to.be.null;
+                    expect(first).to.eql('hello');
+                    expect(second).to.eql('world');
+                    finished();
+                  },
+        handler2  = function (err, first, second) {
+                    expect(err).to.be.null;
+                    expect(first).to.eql('hello');
+                    expect(second).to.eql('world');
+                    finished();
+                  }
+    ;
+
+    queue.run('task', work, handler1);
+    queue.run('task', work, handler2);
+
+    process.nextTick(function () {
+      queue.run('task', work, handler1);
+    });
+  });
 });
