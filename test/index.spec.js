@@ -25,7 +25,7 @@ describe('QueueFactory', function () {
     expect(queue.entry_factory).to.be.eql(factory);
   });
 
-  it.only('should not call a given handler more than once', function (done) {
+  it('should not call a given handler more than once', function (done) {
     var queue     = QueueFactory(),
         workCall  = 0,
         count     = 0,
