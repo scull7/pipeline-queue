@@ -51,8 +51,20 @@ describe ('Queue', function () {
         'isActive': sinon.spy(),
         'getLast': sinon.spy()
       };
-      entry.getLast = sinon.stub().returns(['test']);
+      entry.getLast = sinon.stub().returns([null,'test']);
       queue.entry_factory.getNew = sinon.stub().returns(entry);
+    });
+
+    it('should call the `done` function with an error if the getEntry call fails with an erro', function (done) {
+      var error       = new Error('bad juju');
+      queue.getEntry  = sinon.stub().callsArgWith(1, error);
+
+      var handler     = function (err, result) {
+        err.should.eql(error);
+        done();
+      }
+
+      queue.run('test', function () {}, handler, 42);
     });
 
     it('should return the queue object.', function () {
@@ -63,7 +75,7 @@ describe ('Queue', function () {
       entry.isValid = sinon.stub().returns(true);
       var response = queue.run('test', task, callback, 42);
       entry.isValid.should.have.been.calledWith(42);
-      callback.should.have.been.calledWith('test');
+      callback.should.have.been.calledWith(null, 'test');
       task.should.not.have.been.called;
     });
     it('should add the callback to the entry when the entry is not valid.', function () {
@@ -77,19 +89,29 @@ describe ('Queue', function () {
       entry.add.should.have.been.calledWith(callback);
       task.should.not.have.been.called;
     });
-    it('should initiate the task when the entry is not active.', function () {
-      entry.isActive = sinon.stub().returns(false);
-      entry.isValid = sinon.stub().returns(false);
+    it('should initiate the task when the entry is not active.', function (done) {
+      queue.getEntry  = sinon.stub().callsArgWith(1, null, entry);
+      task            = sinon.stub().callsArgWith(0, null, 'finished');
+      entry.isActive  = sinon.stub().returns(false);
+      entry.isValid   = sinon.stub().returns(false);
+      entry.handlers  = [];
 
-      var test_handler = sinon.spy();
-      queue.getHandler = sinon.stub().returns(test_handler);
+      entry.add = function (handler) {
+        this.handlers.push(handler);
+      };
+      entry.run = function () {
+        var args  = Array.prototype.slice.call(arguments);
+        this.handlers.forEach(function (el) {
+          el.apply(el, args);
+        });
+      };
 
-      var response = queue.run('test', task, callback, 42);
-
-      entry.isValid.should.have.been.calledWith(42);
-      callback.should.not.have.been.called;
-      entry.add.should.have.been.calledWith(callback);
-      task.should.have.been.calledWith(null, test_handler);
+      var handler   = function (err, result) {
+        entry.active.should.eql(1);
+        result.should.eql('finished');
+        done();
+      }
+      queue.run('test', task, handler, 42);
     });
   });
 
@@ -114,6 +136,7 @@ describe ('Queue', function () {
     it('should return an entry from the factory getNew() function when the cache key does not exist.', function (done) {
       var test_entry = {};
       queue.entry_factory.getNew = sinon.stub().returns(test_entry);
+
       var response = queue.getEntry('dne', function (err, entry) {
         queue.cache.set.should.have.been.calledWith('dne',test_entry);
         queue.entry_factory.getNew.should.have.been.calledOnce;
@@ -147,26 +170,4 @@ describe ('Queue', function () {
       });
     });
   }); 
-  it('should have a getHandler function', function () {
-    expect(queue).to.have.property('getHandler').that.is.a('function');
-  });
-
-  describe('#getHandler', function () {
-    var entry = {
-      'run': sinon.spy()
-    };
-    it('should return a function', function () {
-      expect(queue.getHandler()).to.be.a('function');
-    });
-    it('should return a function that runs the given entry\'s run function when called.', function () {
-      var done = queue.getHandler(entry);
-      done();
-      entry.run.should.have.been.calledOnce;
-    });
-    it('should return a handler function that proxy\'s the arguments to the run function.', function () {
-      var done = queue.getHandler(entry);
-      done('test1', 'test2','test3');
-      entry.run.should.have.been.calledWith('test1','test2','test3');
-    });
-  });
 });
