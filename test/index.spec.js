@@ -34,7 +34,7 @@ describe('QueueFactory', function () {
 
                     if (count > 2) {
                       process.nextTick(function () {
-                        expect(workCall).to.eql(2);
+                        expect(workCall).to.eql(1);
                         expect(count).to.eql(3)
                         done();
                       });
