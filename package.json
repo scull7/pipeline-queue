@@ -24,13 +24,13 @@
     "url": "https://github.com/scull7/request-queue/issues"
   },
   "devDependencies": {
-    "sinon-chai": "~2.5.0",
-    "chai": "~1.9.1",
-    "sinon": "~1.9.1",
-    "mocha": "~1.18.2",
-    "mocha-lcov-reporter": "0.0.1",
+    "chai": "^1.9.2",
     "codeclimate-test-reporter": "0.0.3",
     "coveralls": "~2.10.0",
-    "istanbul": "~0.2.8"
+    "istanbul": "^0.2.16",
+    "mocha": "^1.18.2",
+    "mocha-lcov-reporter": "0.0.1",
+    "sinon": "~1.9.1",
+    "sinon-chai": "~2.5.0"
   }
 }
