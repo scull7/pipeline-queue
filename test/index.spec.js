@@ -65,4 +65,63 @@ describe('QueueFactory', function () {
       queue.run('task', work, handler1);
     });
   });
+
+
+  it('should allow for a cloned object cache', function(done) {
+
+    var store = {};
+    var cache = {
+      get: function(key, cb) {
+        if (store.hasOwnProperty(key)) {
+          return cb(null, Object.assign({}, store[key]));
+        }
+        return cb(null);
+      }
+    , set: function(key, value, cb) {
+        store[key] = value;
+        return cb(null, value);
+      }
+    };
+
+    var queue = QueueFactory({ cache: cache });
+    var workCall  = 0;
+    var count     = 0;
+    var finished  = function () {
+                    count++
+
+                    if (count > 2) {
+                      process.nextTick(function () {
+                        expect(workCall).to.eql(1);
+                        expect(count).to.eql(3)
+                        done();
+                      });
+                    }
+                  };
+    var work      = function (cb) {
+                    workCall++;
+                    process.nextTick(cb.bind(cb, null, 'hello', 'world'));
+                  };
+    var handler1  = function (err, first, second) {
+                    expect(err).to.be.null;
+                    expect(first).to.eql('hello');
+                    expect(second).to.eql('world');
+                    finished();
+                  };
+    var handler2  = function (err, first, second) {
+                    expect(err).to.be.null;
+                    expect(first).to.eql('hello');
+                    expect(second).to.eql('world');
+                    finished();
+                  }
+    ;
+
+    queue.run('task', work, handler1);
+    queue.run('task', work, handler2);
+
+    process.nextTick(function () {
+      queue.run('task', work, handler1);
+    });
+
+
+  });
 });
