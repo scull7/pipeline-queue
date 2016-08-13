@@ -215,6 +215,29 @@ describe('lib/queue-entry.js', function() {
   });
 
 
+  it('should handle a non array res.data', function(done) {
+
+    var res = Response.factory(250);
+    res     = Response.setData(res, 'foo');
+
+    var handler = function(foo) {
+
+      expect(foo).to.eql(foo);
+      done();
+
+    };
+
+    queue.add('test', handler, function(err) {
+
+      if (err) return done(err);
+
+      queue.dequeue('test', res);
+
+    });
+
+  });
+
+
   it('should immediately de-queue a handler if there is a response ' +
   ' already registered for the key', function(done) {
 
@@ -267,6 +290,62 @@ describe('lib/queue-entry.js', function() {
 
     expect(test).to.throw(Error, /Already In Progress/);
     done();
+
+  });
+
+
+  it('should return true when isWaiting is called on a in progress key',
+  function(done) {
+
+    var res = Response.factory(250);
+
+    queue.start('test', res, function(err) {
+
+      if (err) return done(err);
+
+      queue.isWaiting('test', function(err, is_waiting) {
+
+        if (err) return done(err);
+
+        expect(is_waiting).to.be.true;
+        done();
+
+      });
+
+    });
+
+  });
+
+
+  it('should bubble up an error from the data cache on an isWaiting call',
+  function(done) {
+
+    var res = Response.factory(250);
+
+    data_cache.get = sinon.stub().yields(new Error('foo'));
+
+    queue.isWaiting('test', function(err) {
+
+      expect(err.message).to.eql('foo');
+      done();
+
+    });
+
+  });
+
+
+  it('should bubble up an error from the data cache on a start call',
+  function(done) {
+
+    var res = Response.factory(250);
+
+    data_cache.get = sinon.stub().yields(new Error('boo'));
+
+    queue.start('test', res, function(err) {
+      
+      expect(err.message).to.eql('boo');
+      done();
+    });
 
   });
 
