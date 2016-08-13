@@ -86,6 +86,33 @@ describe('lib/response.js', function() {
   });
 
 
+  describe('::getData', function() {
+
+    beforeEach(function() { this.clock = sinon.useFakeTimers(); });
+
+    afterEach(function() { this.clock.restore(); });
+
+    it('should throw an Error when given a dead object', function() {
+
+      var res  = Response.factory(250);
+      res      = Response.setData(res, 'boo');
+
+      this.clock.tick(251);
+
+      var test = function() {
+        return Response.getData(res);
+      };
+
+      expect(test).to.throw(
+        Error
+      , /Cannot get data from a dead response object/
+      );
+
+    });
+
+  });
+
+
   describe('::isAlive', function() {
 
     beforeEach(function() { this.clock = sinon.useFakeTimers(); });
