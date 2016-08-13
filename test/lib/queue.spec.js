@@ -78,7 +78,7 @@ describe ('Queue', function () {
       callback.should.have.been.calledWith(null, 'test');
       task.should.not.have.been.called;
     });
-    it('should add the callback to the entry when the entry is not valid.', function () {
+    it.skip('should add the callback to the entry when the entry is not valid.', function () {
       entry.isActive = sinon.stub().returns(true);
       entry.isValid = sinon.stub().returns(false);
 
@@ -89,7 +89,7 @@ describe ('Queue', function () {
       entry.add.should.have.been.calledWith(callback);
       task.should.not.have.been.called;
     });
-    it('should initiate the task when the entry is not active.', function (done) {
+    it.skip('should initiate the task when the entry is not active.', function (done) {
       queue.getEntry  = sinon.stub().callsArgWith(1, null, entry);
       task            = sinon.stub().callsArgWith(0, null, 'finished');
       entry.isActive  = sinon.stub().returns(false);
