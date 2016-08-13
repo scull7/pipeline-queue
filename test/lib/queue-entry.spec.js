@@ -239,4 +239,35 @@ describe('lib/queue-entry.js', function() {
 
   });
 
+
+  it('should allow me to start an unstarted task', function(done) {
+
+    var res = Response.factory(250);
+
+    queue.start('test', res, function(err, result) {
+
+      if (err) return done(err);
+
+      expect(Response.isWaiting(result)).to.be.true;
+      done();
+
+    });
+
+  });
+
+
+  it('should throw an error on an already started task', function(done) {
+
+    var res = Response.factory(250);
+    res     = Response.startWaiting(res);
+
+    var test = function() {
+      queue.start('test', res);
+    };
+
+    expect(test).to.throw(Error, /Already In Progress/);
+    done();
+
+  });
+
 });
