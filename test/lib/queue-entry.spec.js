@@ -1,6 +1,7 @@
 /*eslint-env node, mocha*/
 var expect     = require('chai').expect;
 var QueueEntry = require('../../lib/queue-entry.js');
+var Response   = require('../../lib/response.js');
 var memory     = require('../../lib/memory.js');
 
 var queue = null;
@@ -71,9 +72,12 @@ describe('lib/queue-entry.js', function() {
     data_cache.set = sinon.stub().yields(new Error('unavailable'));
     queue = QueueEntry(fn_cache, data_cache);
 
+    var res = Response.factory(250);
+    res = Response.setData(res, [ null, 'foo', 'bar' ]);
+
     queue.add('test', function() {}, function() {
       
-      queue.dequeue('test', 'foo', function(err) {
+      queue.dequeue('test', res, function(err) {
 
         expect(err.message).to.eql('unavailable');
         done();
@@ -89,9 +93,12 @@ describe('lib/queue-entry.js', function() {
     fn_cache.get = sinon.stub().yields(new Error('bad get'));
     queue = QueueEntry(fn_cache, data_cache);
 
+    var res = Response.factory(250);
+    res = Response.setData(res, [ null, 'foo', 'bar' ]);
+
     queue.add('test', function() {}, function() {
       
-      queue.dequeue('test', 'foo', function(err) {
+      queue.dequeue('test', res, function(err) {
 
         expect(err.message).to.eql('bad get');
         done();
@@ -107,15 +114,50 @@ describe('lib/queue-entry.js', function() {
     fn_cache.del = sinon.stub().yields(new Error('bad del'));
     queue = QueueEntry(fn_cache, data_cache);
 
+    var res = Response.factory(250);
+    res = Response.setData(res, [ null, 'foo', 'bar' ]);
+
     queue.add('test', function() {}, function() {
       
-      queue.dequeue('test', 'foo', function(err) {
+      queue.dequeue('test', res, function(err) {
 
         expect(err.message).to.eql('bad del');
         done();
 
       });
     });
+
+  });
+
+
+  it('should throw a TypeError if the given data object is not a ' +
+  'Response object', function(done) {
+
+    var test = function() {
+      queue.dequeue('test', { foo: 'bar' }, function(err) {
+        done('how did we get here?');
+      });
+    };
+
+    expect(test).to.throw(TypeError, /Invalid Response Object/);
+    done();
+
+  });
+
+
+  it('should throw an Error if you try to de-queue with a non-alive ' +
+  'response object', function() {
+
+    var res  = Response.factory(250);
+
+    var test = function () {
+      queue.dequeue('test', res);
+    };
+
+    expect(test).to.throw(
+      Error
+    , /Cannot de-queue with a dead response object/
+    );
 
   });
 
@@ -135,6 +177,9 @@ describe('lib/queue-entry.js', function() {
       if (handlers < 1) done();
     }
 
+    var res = Response.factory(250);
+    res = Response.setData(res, [null, 'foo', 'bar']);
+
     queue.add('test', handler, function(err) {
 
       if (err) return done(err);
@@ -143,7 +188,7 @@ describe('lib/queue-entry.js', function() {
 
         if (err) return done(err);
 
-        queue.dequeue('test', [ null, 'foo', 'bar' ], function(err) {
+        queue.dequeue('test', res, function(err) {
 
           if (err) return done(err);
 
@@ -157,7 +202,10 @@ describe('lib/queue-entry.js', function() {
 
   it('should handle an empty queue on dequeue', function(done) {
 
-    queue.dequeue('test', [ null ], function(err) {
+    var res = Response.factory(250);
+    res = Response.setData(res, [null, 'foo', 'bar']);
+
+    queue.dequeue('test', res, function(err) {
 
       expect(err).to.be.undefined;
       done();
@@ -180,7 +228,10 @@ describe('lib/queue-entry.js', function() {
 
     };
 
-    queue.dequeue('test', [ null, 'foo', 'bar' ], function(err) {
+    var res = Response.factory(250);
+    res = Response.setData(res, [null, 'foo', 'bar']);
+
+    queue.dequeue('test', res, function(err) {
       if (err) return done(err);
 
       queue.add('test', handler);
