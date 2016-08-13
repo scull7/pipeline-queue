@@ -7,7 +7,7 @@ var queue = null;
 var fn_cache = null;
 var data_cache = null;
 
-describe.only('lib/queue-entry.js', function() {
+describe('lib/queue-entry.js', function() {
 
   beforeEach(function() {
 
@@ -150,6 +150,40 @@ describe.only('lib/queue-entry.js', function() {
         });
 
       });
+    });
+
+  });
+
+
+  it('should handle an empty queue on dequeue', function(done) {
+
+    queue.dequeue('test', [ null ], function(err) {
+
+      expect(err).to.be.undefined;
+      done();
+
+    });
+
+  });
+
+
+  it('should immediately de-queue a handler if there is a response ' +
+  ' already registered for the key', function(done) {
+
+    var handler = function(err, foo, bar) {
+      if (err) return done(err);
+
+      expect(foo).to.eql('foo');
+      expect(bar).to.eql('bar');
+
+      done();
+
+    };
+
+    queue.dequeue('test', [ null, 'foo', 'bar' ], function(err) {
+      if (err) return done(err);
+
+      queue.add('test', handler);
     });
 
   });
