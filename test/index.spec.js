@@ -17,12 +17,15 @@ describe('QueueFactory', function () {
     expect(queue).to.be.an.instanceOf(Queue);
     expect(queue.cache).to.be.eql(cache);
   });
-  
-  it('should accept a factory option', function () {
-    var factory = {},
-    queue = QueueFactory({ factory: factory });
+
+
+  it('should accept a ttl option', function() {
+
+    var ttl = 50;
+    queue = QueueFactory({ ttl: ttl });
     expect(queue).to.be.an.instanceOf(Queue);
-    expect(queue.entry_factory).to.be.eql(factory);
+    expect(queue.ttl).to.eql(ttl);
+
   });
 
   it('should not call a given handler more than once', function (done) {
@@ -122,6 +125,6 @@ describe('QueueFactory', function () {
       queue.run('task', work, handler1);
     });
 
-
   });
+
 });

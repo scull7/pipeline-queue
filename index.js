@@ -1,19 +1,15 @@
-var Queue = require(__dirname + '/lib/queue'),
-    EntryFactory = require(__dirname + '/lib/entry/factory');
+var Queue       = require('./lib/queue.js');
+var DEFAULT_TTL = 250; // 250 milliseconds
 
 module.exports = function (options) {
-  var cache;
+  var cache    = null;
+  var ttl      = DEFAULT_TTL;
 
-  if(!options) {
-    options = {};
-  }
+  if (!options) options = {};
 
-  if(options.cache) {
-    cache = options.cache;
-  }
-  if(!options.factory) {
-    options.factory = new EntryFactory();
-  }
+  if (options.ttl) ttl = options.ttl;
 
-  return new Queue(options.factory, cache);
+  if (options.cache) cache = options.cache;
+
+  return new Queue(cache, ttl);
 };
