@@ -23,6 +23,19 @@
   "bugs": {
     "url": "https://github.com/scull7/request-queue/issues"
   },
+  "eslintConfig": {
+    "parserOptions": {
+      "ecmaVersion": 5
+    },
+    "env": {
+      "node": true
+    },
+    "extends": "eslint:recommended",
+    "rules": {
+      "complexity": [ "error", { "max": 6 } ],
+      "max-depth": [ "error", { "max": 4 } ]
+    }
+  },
   "devDependencies": {
     "chai": "^1.9.2",
     "codeclimate-test-reporter": "0.0.3",
