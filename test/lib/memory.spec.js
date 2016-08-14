@@ -1,3 +1,5 @@
+/*eslint-env node, mocha*/
+var expect  = require('chai').expect;
 var memory  = require(__dirname + '/../../lib/memory');
 
 describe('Memory', function () {
@@ -49,11 +51,20 @@ describe('Memory', function () {
     });
 
     it('should clear the cache object', function(done) {
-      cache.set('stuff', 'thing', function (err, given) {
+      cache.set('stuff', 'thing', function (err) {
+
+        if (err) return done(err);
+
         cache.get('stuff', function (err, ret) {
+
+          if (err) return done(err);
+
           expect(ret).to.eql('thing');
 
           cache.clear(function(err) {
+
+            if (err) return done(err);
+
             cache.get('stuff', function (err, empty) {
               expect(empty).to.be.null;
               done();

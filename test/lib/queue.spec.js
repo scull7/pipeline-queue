@@ -48,7 +48,7 @@ describe ('Queue', function () {
   });
 
   describe('#run()', function () {
-    var entry, callback, task;
+    var callback, task;
 
     beforeEach(function () {
       callback = sinon.spy();

@@ -1,5 +1,6 @@
 /*eslint-env node, mocha*/
 var expect     = require('chai').expect;
+var sinon      = require('sinon');
 var QueueEntry = require('../../lib/queue-entry.js');
 var Response   = require('../../lib/response.js');
 var memory     = require('../../lib/memory.js');
@@ -40,8 +41,8 @@ describe('lib/queue-entry.js', function() {
 
         expect(response).to.deep.eql([fn]);
 
-        end = new Date().getTime();
-        total += (end - start);
+        var end = new Date().getTime();
+        total   += (end - start);
 
         if (to_go < 1) {
           //console.log('RUNTIME AVG: ', total / run_count);
@@ -135,6 +136,9 @@ describe('lib/queue-entry.js', function() {
 
     var test = function() {
       queue.dequeue('test', { foo: 'bar' }, function(err) {
+
+        if (err) return done(err);
+
         done('how did we get here?');
       });
     };
@@ -319,8 +323,6 @@ describe('lib/queue-entry.js', function() {
 
   it('should bubble up an error from the data cache on an isWaiting call',
   function(done) {
-
-    var res = Response.factory(250);
 
     data_cache.get = sinon.stub().yields(new Error('foo'));
 

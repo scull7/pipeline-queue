@@ -29,10 +29,10 @@ describe('lib/response.js', function() {
       var test = { args: [ 'foo', 'bar' ], waiting: 0 };
       expect(Response.isResponse(test)).to.be.false;
 
-      var test = { ttl: 250, waiting: 0 };
+      test = { ttl: 250, waiting: 0 };
       expect(Response.isResponse(test)).to.be.false;
 
-      var test = { ttl: 250, args: [ 'foo', 'bar' ] };
+      test = { ttl: 250, args: [ 'foo', 'bar' ] };
       expect(Response.isResponse(test)).to.be.false;
 
     });

@@ -46,8 +46,9 @@ describe('QueueFactory', function () {
 
   it('should accept a ttl option', function() {
 
-    var ttl = 50;
-    queue = QueueFactory({ ttl: ttl });
+    var ttl   = 50;
+    var queue = QueueFactory({ ttl: ttl });
+
     expect(queue).to.be.an.instanceOf(Queue);
     expect(queue.ttl).to.eql(ttl);
 
