@@ -70,7 +70,7 @@ describe('QueueFactory', function () {
   });
 
 
-  it.skip('should allow for a cloned object cache', function(done) {
+  it('should allow for a cloned object cache', function(done) {
 
     var store = {};
     var cache = {
