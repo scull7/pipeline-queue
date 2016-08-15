@@ -43,6 +43,36 @@ describe('Memory', function () {
     });
   });
 
+  describe('::del()', function() {
+
+    it('should clear the given key', function(done) {
+
+      cache.set('foo', 'bar', function() {
+
+        cache.del('foo', function() {
+
+          cache.get('foo', function(val) {
+
+            expect(val).to.be.null;
+            done();
+
+          });
+
+        });
+
+      });
+
+    });
+
+
+    it('should not error on a non-existant key', function(done) {
+
+      cache.del('boo', done);
+
+    });
+
+  });
+
   describe ('::clear()', function () {
 
     it('should be a function with an arity of 1', function () {

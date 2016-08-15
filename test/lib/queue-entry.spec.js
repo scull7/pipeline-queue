@@ -3,6 +3,7 @@ var expect     = require('chai').expect;
 var sinon      = require('sinon');
 var QueueEntry = require('../../lib/queue-entry.js');
 var Response   = require('../../lib/response.js');
+var FnCache    = require('../../lib/fn-cache.js');
 var memory     = require('../../lib/memory.js');
 
 var queue = null;
@@ -13,7 +14,7 @@ describe('lib/queue-entry.js', function() {
 
   beforeEach(function() {
 
-    fn_cache   = memory();
+    fn_cache   = FnCache();
     data_cache = memory();
     queue      = QueueEntry(fn_cache, data_cache);
 
@@ -25,14 +26,14 @@ describe('lib/queue-entry.js', function() {
 
     function run(run_count, total, to_go) {
 
-      fn_cache   = memory();
-      data_cache = memory ();
-      queue      = QueueEntry(fn_cache, data_cache);
+      const fn_cache   = FnCache();
+      const data_cache = memory ();
+      const queue      = QueueEntry(fn_cache, data_cache);
 
       //console.time('RUNTIME');
-      var start = new Date().getTime();
-      var key   = 'mytestkey';
-      var fn    = function() { return 'foo'; };
+      const start = new Date().getTime();
+      const key   = 'mytestkey';
+      const fn    = function() { return 'foo'; };
 
       var thenCheck = function(err, response) {
         if (err) return done(err);
@@ -81,48 +82,6 @@ describe('lib/queue-entry.js', function() {
       queue.dequeue('test', res, function(err) {
 
         expect(err.message).to.eql('unavailable');
-        done();
-
-      });
-    });
-
-  });
-
-
-  it('should  bubble up an error from fn_cache.get', function(done) {
-
-    fn_cache.get = sinon.stub().yields(new Error('bad get'));
-    queue = QueueEntry(fn_cache, data_cache);
-
-    var res = Response.factory(250);
-    res = Response.setData(res, [ null, 'foo', 'bar' ]);
-
-    queue.add('test', function() {}, function() {
-      
-      queue.dequeue('test', res, function(err) {
-
-        expect(err.message).to.eql('bad get');
-        done();
-
-      });
-    });
-
-  });
-
-
-  it('should  bubble up an error from fn_cache.del', function(done) {
-
-    fn_cache.del = sinon.stub().yields(new Error('bad del'));
-    queue = QueueEntry(fn_cache, data_cache);
-
-    var res = Response.factory(250);
-    res = Response.setData(res, [ null, 'foo', 'bar' ]);
-
-    queue.add('test', function() {}, function() {
-      
-      queue.dequeue('test', res, function(err) {
-
-        expect(err.message).to.eql('bad del');
         done();
 
       });
@@ -211,10 +170,11 @@ describe('lib/queue-entry.js', function() {
 
     queue.dequeue('test', res, function(err) {
 
-      expect(err).to.be.undefined;
+      expect(err).to.be.null;
       done();
 
-    });
+    })
+    .catch(done);
 
   });
 
@@ -258,11 +218,11 @@ describe('lib/queue-entry.js', function() {
     var res = Response.factory(250);
     res = Response.setData(res, [null, 'foo', 'bar']);
 
-    queue.dequeue('test', res, function(err) {
-      if (err) return done(err);
+    queue.dequeue('test', res)
 
-      queue.add('test', handler);
-    });
+    .then(() => queue.add('test', handler))
+
+    .catch(done);
 
   });
 
@@ -288,12 +248,13 @@ describe('lib/queue-entry.js', function() {
     var res = Response.factory(250);
     res     = Response.startWaiting(res);
 
-    var test = function() {
-      queue.start('test', res);
-    };
-
-    expect(test).to.throw(Error, /Already In Progress/);
-    done();
+    queue.start('test', res)
+      .then(() => done(new Error('Unexpected success')))
+      .catch((err) => {
+        expect(err.message).to.eql('Already In Progress');
+        done();
+      })
+      .catch(done);
 
   });
 

@@ -47,35 +47,4 @@ describe ('Queue', function () {
     expect(queue).to.have.property('run').that.is.a('function'); 
   });
 
-  describe('#run()', function () {
-    var callback, task;
-
-    beforeEach(function () {
-      callback = sinon.spy();
-      task = sinon.spy();
-    });
-
-
-    it('should return the queue object.', function () {
-      var response = queue.run('test', task, callback, 42);
-      expect(response).to.be.eql(queue);
-    });
-
-
-    it('should bubble an error from the start method to the given done ' +
-    'handler', function(done) {
-
-      queue.queue.start = sinon.stub().yields(new Error('boom!'));
-
-      queue.run('test', task, function(err) {
-
-        expect(err.message).to.eql('boom!');
-        done();
-
-      });
-
-    });
-
-  });
-
 });

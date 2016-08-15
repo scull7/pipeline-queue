@@ -25,10 +25,13 @@
   },
   "eslintConfig": {
     "parserOptions": {
-      "ecmaVersion": 5
+      "ecmaVersion": 6
     },
     "env": {
       "node": true
+    },
+    "globals": {
+      "Promise": true
     },
     "extends": "eslint:recommended",
     "rules": {
@@ -55,5 +58,8 @@
     "mocha-lcov-reporter": "0.0.1",
     "sinon": "^1.9.1",
     "sinon-chai": "~2.5.0"
+  },
+  "dependencies": {
+    "synchronous-semaphore": "^0.1.0"
   }
 }
